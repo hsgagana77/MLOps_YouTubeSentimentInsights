@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Visualizations</h2>
-<a href="/generate_wordcloud">Wordcloud</a><br>
-<a href="/generate_chart">Pie Chart</a><br>
-<a href="/generate_trend_graph">Trend Graph</a><br>
-
 <div class="mb-4">
   <h4>Wordcloud</h4>
   <form id="wcForm">
@@ -14,15 +10,5 @@
   <img id="wcImg" src="" style="max-width:100%; margin-top:10px;">
 </div>
 
-<div class="mb-4">
-  <h4>Sentiment Pie Chart</h4>
-  <div>
-    <input id="pc_1" placeholder="Positive" class="form-control mb-1">
-    <input id="pc_0" placeholder="Neutral" class="form-control mb-1">
-    <input id="pc_-1" placeholder="Negative" class="form-control mb-1">
-    <button class="btn btn-primary" onclick="generatePie()">Generate Pie</button>
-  </div>
-  <img id="pcImg" src="" style="max-width:400px; margin-top:10px;">
-</div>
 
 {% endblock %}

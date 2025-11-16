@@ -6,6 +6,7 @@ import yaml
 import logging
 import lightgbm as lgb
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import f1_score
 
 # MLflow
 import mlflow
@@ -46,19 +47,19 @@ def load_params(params_path: str) -> dict:
 
 
 def load_data(file_path: str) -> pd.DataFrame:
-    """Load data from a CSV file."""
+    """Load data from CSV."""
     try:
         df = pd.read_csv(file_path)
         df.fillna('', inplace=True)
-        logger.debug('Data loaded and NaNs filled from %s', file_path)
+        logger.debug('Data loaded from %s', file_path)
         return df
     except Exception as e:
-        logger.error('Unexpected error loading data: %s', e)
+        logger.error('Error loading data: %s', e)
         raise
 
 
 def apply_tfidf(train_data: pd.DataFrame, max_features: int, ngram_range: tuple):
-    """Apply TF-IDF with ngrams to the data."""
+    """Apply TF-IDF with ngrams to the data and save vectorizer."""
     try:
         vectorizer = TfidfVectorizer(max_features=max_features, ngram_range=ngram_range)
 
@@ -69,16 +70,15 @@ def apply_tfidf(train_data: pd.DataFrame, max_features: int, ngram_range: tuple)
 
         logger.debug(f"TF-IDF transformation complete. Train shape: {X_train_tfidf.shape}")
 
-        # save vectorizer
-        vect_path = os.path.join(get_root_directory(), 'tfidf_vectorizer.pkl')
+        vect_path = os.path.join(get_root_directory(), "tfidf_vectorizer.pkl")
         with open(vect_path, 'wb') as f:
             pickle.dump(vectorizer, f)
-        logger.debug('Vectorizer saved to %s', vect_path)
+        logger.debug("Vectorizer saved to %s", vect_path)
 
         return X_train_tfidf, y_train, vect_path
 
     except Exception as e:
-        logger.error('Error during TF-IDF: %s', e)
+        logger.error("Error during TF-IDF transformation: %s", e)
         raise
 
 
@@ -98,7 +98,7 @@ def train_lgbm(X_train, y_train, learning_rate, max_depth, n_estimators):
             n_estimators=n_estimators
         )
         model.fit(X_train, y_train)
-        logger.debug("LightGBM model trained successfully")
+        logger.debug("LightGBM model trained successfully.")
         return model
     except Exception as e:
         logger.error("Error during LightGBM training: %s", e)
@@ -106,7 +106,7 @@ def train_lgbm(X_train, y_train, learning_rate, max_depth, n_estimators):
 
 
 def save_model(model, file_path: str):
-    """Save model to file."""
+    """Save trained model locally."""
     try:
         with open(file_path, 'wb') as f:
             pickle.dump(model, f)
@@ -117,26 +117,26 @@ def save_model(model, file_path: str):
 
 
 def get_root_directory() -> str:
-    """Get project root directory (two levels up)."""
+    """Get project root directory."""
     current = os.path.dirname(os.path.abspath(__file__))
-    return os.path.abspath(os.path.join(current, '../../'))
+    return os.path.abspath(os.path.join(current, "../../"))
 
 
 # ------------------------------------------------------------
-# main training flow (with MLflow logging)
+# MAIN TRAINING FLOW + MLFLOW LOGGING
 # ------------------------------------------------------------
 
 def main():
     try:
         root_dir = get_root_directory()
-        params = load_params(os.path.join(root_dir, 'params.yaml'))
+        params = load_params(os.path.join(root_dir, "params.yaml"))
 
-        # hyperparams
-        max_features = params['model_building']['max_features']
-        ngram_range = tuple(params['model_building']['ngram_range'])
-        learning_rate = params['model_building']['learning_rate']
-        max_depth = params['model_building']['max_depth']
-        n_estimators = params['model_building']['n_estimators']
+        # hyperparameters from params.yaml
+        max_features = params["model_building"]["max_features"]
+        ngram_range = tuple(params["model_building"]["ngram_range"])
+        learning_rate = params["model_building"]["learning_rate"]
+        max_depth = params["model_building"]["max_depth"]
+        n_estimators = params["model_building"]["n_estimators"]
 
         # MLflow setup
         mlflow.set_tracking_uri("http://ec2-44-213-77-221.compute-1.amazonaws.com:5000/")
@@ -144,41 +144,48 @@ def main():
 
         with mlflow.start_run():
 
-            # 1. Load preprocessed training data
+            # 1. Load preprocessed data
             train_data_path = os.path.join(root_dir, "data/interim/train_processed.csv")
             train_data = load_data(train_data_path)
 
-            # 2. TF-IDF feature engineering
-            X_train_tfidf, y_train, vect_path = apply_tfidf(train_data, max_features, ngram_range)
+            # 2. TF-IDF vectorizer
+            X_train_tfidf, y_train, vect_path = apply_tfidf(
+                train_data, max_features, ngram_range
+            )
 
-            # 3. Train model
+            # 3. Train the model
             model = train_lgbm(X_train_tfidf, y_train, learning_rate, max_depth, n_estimators)
 
             # 4. Save model locally
             model_path = os.path.join(root_dir, "lgbm_model.pkl")
             save_model(model, model_path)
 
-            # ---------------------------------------------------
-            # 5. LOGGING TO MLFLOW (CRITICAL FOR YOUR FLASK APP)
-            # ---------------------------------------------------
+            # -------------------------------------------------------
+            # 5. METRIC LOGGING (IMPORTANT!)
+            # -------------------------------------------------------
+            train_preds = model.predict(X_train_tfidf)
+            f1 = f1_score(y_train, train_preds, average="weighted")
+            mlflow.log_metric("f1_score", f1)
+            logger.info(f"Logged f1_score = {f1}")
+
+            # -------------------------------------------------------
+            # 6. PARAMS + ARTIFACTS LOGGING
+            # -------------------------------------------------------
+            mlflow.log_param("max_features", max_features)
+            mlflow.log_param("ngram_range", ngram_range)
+            mlflow.log_param("learning_rate", learning_rate)
+            mlflow.log_param("max_depth", max_depth)
+            mlflow.log_param("n_estimators", n_estimators)
+
             mlflow.log_artifact(model_path)
             mlflow.log_artifact(vect_path)
 
-            # Log hyperparameters
-            mlflow.log_params({
-                "max_features": max_features,
-                "ngram_range": ngram_range,
-                "learning_rate": learning_rate,
-                "max_depth": max_depth,
-                "n_estimators": n_estimators
-            })
-
-            logger.info("Model + Vectorizer successfully logged to MLflow.")
+            logger.info("Model + Vectorizer logged to MLflow.")
 
     except Exception as e:
-        logger.error("Training pipeline failed: %s", e)
+        logger.error("Training failed: %s", e)
         print(f"Error: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
