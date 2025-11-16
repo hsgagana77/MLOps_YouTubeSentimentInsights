@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  web:
+    build: .
+    ports:
+      - "5002:5002"
+    environment:
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      - MODEL_NAME=${MODEL_NAME}
+      - BEST_METRIC=${BEST_METRIC}
+      - METRIC_ORDER=${METRIC_ORDER}
+      - LOCAL_MODEL_PATH=/app/ml_models/lgbm_model.pkl
+      - LOCAL_VECT_PATH=/app/ml_models/tfidf_vectorizer.pkl
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+    volumes:
+      - ./ml_models:/app/ml_models
+      - ./templates:/app/templates
+      - ./static:/app/static
+    restart: unless-stopped

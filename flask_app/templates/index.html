@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Predict Sentiment (type or paste comments, one per line)</h2>
+<form method="POST" action="/predict">
+  <div class="mb-3">
+    <textarea class="form-control" name="comments" rows="6" placeholder="Type or paste comments..."></textarea>
+  </div>
+  <div class="mb-3">
+    <input class="form-control" type="file" name="file" form="uploadForm">
+  </div>
+  <button class="btn btn-primary" type="submit">Predict</button>
+</form>
+
+<hr>
+
+<h4>Or upload CSV</h4>
+<form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+  <div class="mb-3">
+    <input class="form-control" type="file" name="file" accept=".csv">
+  </div>
+  <button class="btn btn-secondary" type="submit">Upload CSV</button>
+</form>
+
+<hr>
+<h4>Ingest live YouTube comments</h4>
+<form id="ytForm">
+  <div class="mb-3">
+    <input class="form-control" name="video_id" placeholder="YouTube video id (e.g. dQw4w9WgXcQ)">
+  </div>
+  <div class="mb-3">
+    <input class="form-control" name="api_key" placeholder="Google API Key (or set YOUTUBE_API_KEY env var)">
+  </div>
+  <button class="btn btn-success" type="button" onclick="ingestYoutube()">Ingest & Predict</button>
+</form>
+<div id="ytResults" class="mt-3"></div>
+
+{% endblock %}

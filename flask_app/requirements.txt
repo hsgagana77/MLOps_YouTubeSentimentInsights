@@ -1,0 +1,15 @@
+flask
+flask-cors
+gunicorn
+mlflow
+scikit-learn
+lightgbm
+pandas
+numpy
+joblib
+matplotlib
+wordcloud
+google-api-python-client
+google-auth
+chartjs-python  # optional if you want python helpers; not required for frontend
+xgboost

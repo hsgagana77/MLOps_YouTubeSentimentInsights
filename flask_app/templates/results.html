@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Predictions</h2>
+<table class="table">
+  <thead>
+    <tr><th>Comment</th><th>Sentiment</th></tr>
+  </thead>
+  <tbody>
+    {% for r in results %}
+      <tr>
+        <td>{{ r.comment }}</td>
+        <td>
+          {% if r.pred == 1 %}
+            <span class="badge bg-success">Positive</span>
+          {% elif r.pred == 0 %}
+            <span class="badge bg-secondary">Neutral</span>
+          {% else %}
+            <span class="badge bg-danger">Negative</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a class="btn btn-link" href="/">Back</a>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Visualizations</h2>
+
+<div class="mb-4">
+  <h4>Wordcloud</h4>
+  <form id="wcForm">
+    <textarea class="form-control" name="comments" rows="4" placeholder="Paste comments..."></textarea>
+    <button class="btn btn-primary mt-2" type="button" onclick="generateWordcloud()">Generate Wordcloud</button>
+  </form>
+  <img id="wcImg" src="" style="max-width:100%; margin-top:10px;">
+</div>
+
+<div class="mb-4">
+  <h4>Sentiment Pie Chart</h4>
+  <div>
+    <input id="pc_1" placeholder="Positive" class="form-control mb-1">
+    <input id="pc_0" placeholder="Neutral" class="form-control mb-1">
+    <input id="pc_-1" placeholder="Negative" class="form-control mb-1">
+    <button class="btn btn-primary" onclick="generatePie()">Generate Pie</button>
+  </div>
+  <img id="pcImg" src="" style="max-width:400px; margin-top:10px;">
+</div>
+
+{% endblock %}

@@ -90,3 +90,26 @@ Different imbalance_methods = ['class_weights', 'oversampling', 'adasyn', 'under
 ML pipeline
 Data Ingestion -> Data preprocessing -> Model building -> Model evaluation with mlflow ->
 Model register with mlflow
+
+
+MLOps_YouTubeSentimentInsights/
+├── app_flask/
+│   ├── app.py
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── docker-compose.yml
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── index.html
+│   │   ├── results.html
+│   │   ├── model_compare.html
+│   │   └── visualizations.html
+│   └── static/
+│       ├── css/
+│       │   └── styles.css
+│       └── js/
+│           └── main.js
+├── ml_models/                 # optional local model artifacts (fallback)
+│   ├── lgbm_model.pkl
+│   └── tfidf_vectorizer.pkl
+└── (rest of your repo)
