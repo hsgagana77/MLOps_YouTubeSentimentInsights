@@ -15,6 +15,7 @@ from nltk.stem import WordNetLemmatizer
 from mlflow.tracking import MlflowClient
 import matplotlib.dates as mdates
 import pickle
+import mlflow.lightgbm
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -51,38 +52,41 @@ def preprocess_comment(comment):
 
 
 # Load the model and vectorizer from the model registry and local storage
-# def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
-#     # Set MLflow tracking URI to your server
-#     mlflow.set_tracking_uri("http://ec2-54-167-108-249.compute-1.amazonaws.com:5000/")  # Replace with your MLflow tracking URI
-#     client = MlflowClient()
-#     model_uri = f"models:/{model_name}/{model_version}"
-#     model = mlflow.pyfunc.load_model(model_uri)
-#     with open(vectorizer_path, 'rb') as file:
-#         vectorizer = pickle.load(file)
+def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
+     # Set MLflow tracking URI to your server
+     mlflow.set_tracking_uri("http://ec2-44-213-77-221.compute-1.amazonaws.com:5000/")  # Replace with your MLflow tracking URI
+     client = MlflowClient()
+     model_uri = f"models:/{model_name}/{model_version}"
+     model = mlflow.pyfunc.load_model(model_uri)
+     with open(vectorizer_path, 'rb') as file:
+        vectorizer = pickle.load(file)
    
-#     return model, vectorizer
+     return model, vectorizer
 
 
 
-def load_model(model_path, vectorizer_path):
-    """Load the trained model."""
-    try:
-        with open(model_path, 'rb') as file:
-            model = pickle.load(file)
-        
-        with open(vectorizer_path, 'rb') as file:
-            vectorizer = pickle.load(file)
-      
-        return model, vectorizer
-    except Exception as e:
-        raise
+#def load_model(model_path, vectorizer_path):
+#    """Load the trained model."""
+#    try:
+#        with open(model_path, 'rb') as file:
+#            model = pickle.load(file)
+#        
+#        with open(vectorizer_path, 'rb') as file:
+#            vectorizer = pickle.load(file)
+#      
+#        return model, vectorizer
+#    except Exception as e:
+#        raise
 
 
 # Initialize the model and vectorizer
-model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
+#model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
 
 # Initialize the model and vectorizer
-# model, vectorizer = load_model_and_vectorizer("my_model", "1", "./tfidf_vectorizer.pkl")  # Update paths and versions as needed
+#model, vectorizer = load_model_and_vectorizer("my_model", "1", "./tfidf_vectorizer.pkl")  # Update paths and versions as needed
+model = pickle.load(open("lgbm_model.pkl", "rb"))
+vectorizer = pickle.load(open("tfidf_vectorizer.pkl", "rb"))
+
 
 @app.route('/')
 def home():
@@ -326,4 +330,4 @@ def generate_trend_graph():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

@@ -1,0 +1,92 @@
+Steps
+
+1.Data collection
+
+2.Data pre-processing and EDA
+*Data preprocessing means cleaning, transforming, and organising raw data into a format that’s suitable for analysis or model training.
+*Exploratory Data Analysis (EDA) is the process of understanding your data —
+you summarise, visualise, and explore patterns, trends, and relationships in the dataset.
+
+3.Building baseline model
+
+4.Setup mlflow server on AWS
+
+5.Improve baseline model
+
+6.Build ML pipeline using DVC
+
+7.Add model to model registry
+
+8.Implement chrome plugin
+
+9.CI/CD pipeline workflow
+
+10.Dockerisation 
+
+11.Deployment - AWS
+
+12.Github - Code management
+
+
+MLflow on AWS Setup
+
+1. Login to AWS console.
+2. Create IAM user with AdministratorAccess
+3. Export the credentials in your AWS CLI by running "aws configure"
+4. Create a s3 bucket
+5. Create EC2 machine (Ubuntu) & add Security groups 5000 port
+
+Run the mlflow_setup.sh script
+mlflow server ip: http://ec2-44-213-77-221.compute-1.amazonaws.com:5000/
+
+Libraries
+
+1. sklearn
+This will:
+Log your params and metrics
+Store the model artifact in your configured S3 bucket
+Record everything in your MLflow tracking server (metadata in DB)
+CountVectorizer is a class from the scikit-learn (sklearn) library used to transform text 
+into numerical features for machine learning models.
+
+Models 
+
+1.RandomForestClassifier
+Parameters: (hyper Parameter tuning)
+n_estimators = 200
+max_depth = 15
+
+                ┌──────────────┐
+   Data  ─────▶ │   Model      │ ─────▶ Predictions
+                └──────────────┘
+                     ▲
+                     │
+             Parameters (you set)
+                     │
+                     ▼
+                ┌──────────────┐
+                │   Metric     │
+                └──────────────┘
+                     │
+                     ▼
+               Performance score
+
+From 3 experiments -> we can use TFIDF with trigram and max_features = 1000
+
+In a classification problem, class imbalance occurs when one class has many more samples than others.
+Example:
+Class	        Count
+Spam (1)	    900
+Not Spam (0)	100
+So, 90% of data is "Spam" and 10% is "Not Spam".
+If you train a model like this, it’ll learn to always predict the majority class (“Spam”) — 
+giving you high accuracy but poor real performance.
+Example: A 90% “accuracy” model that predicts everything as Spam is useless for detecting 
+non-Spam.
+Different imbalance_methods = ['class_weights', 'oversampling', 'adasyn', 'undersampling', 
+'smote_enn']
+
+
+ML pipeline
+Data Ingestion -> Data preprocessing -> Model building -> Model evaluation with mlflow ->
+Model register with mlflow
